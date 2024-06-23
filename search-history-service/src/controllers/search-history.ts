@@ -10,7 +10,7 @@ const { BAD_REQUEST, OK, INTERNAL_SERVER_ERROR } = StatusCodes;
 //@route   GET /api/v1/search-history
 //@access  Public
 export const getSearchHistory = async (req: Request, res: Response) => {
-  const { email, from_date, to_date, limit = 20, page = 1 } = req.query;
+  const { email, limit = 20, page = 1 } = req.query;
 
   try {
     //if email is provided, validate it
@@ -19,30 +19,10 @@ export const getSearchHistory = async (req: Request, res: Response) => {
       await schema.validate(email, { abortEarly: false });
     }
 
-    if (from_date) {
-      const schema = Yup.date().typeError("From date is not valid");
-      await schema.validate(from_date, { abortEarly: false });
-    }
-
-    if (to_date) {
-      const schema = Yup.date().typeError("To date is not valid");
-      await schema.validate(to_date, { abortEarly: false });
-    }
-
     const query = await SearchHistory.createQueryBuilder("search_history");
 
     if (email) {
       query.where("search_history.email = :email", { email });
-    }
-
-    if (from_date) {
-      query.andWhere("search_history.searched_at >= :from_date", {
-        from_date,
-      });
-    }
-
-    if (to_date) {
-      query.andWhere("search_history.searched_at <= :to_date", { to_date });
     }
 
     const searchHistory = await query
